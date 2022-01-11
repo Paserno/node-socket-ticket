@@ -1,6 +1,6 @@
 > __Elemento Anterior 👀:__ __[Socket Server Basico](https://github.com/Paserno/node-socket-server-basic)__
 #
-# Aplicación de Colas con Socket.io
+# Aplicación de Ticket con Socket.io
 
 Un servidor de Websockets usando Node, Express y Socket.io, pequeña aplicación de colas para el uso de __Socket__. Elementos utilizados:
 
