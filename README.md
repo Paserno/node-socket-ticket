@@ -401,3 +401,13 @@ socket.broadcast.emit('tickets-cola', ticketControl.tickets.length);
 ````
 De esta manerá cada vez que se cree un nuevo ticket, se notificará y cuando se tome un nuevo ticket por los escritorios tambien se notificarán.
 #
+### 8.- Agregar audio cuando se asigna un ticket
+Cuando se toma un nuevo ticket se activará el audio 
+En `public/js/publico.js`
+* Con la clase `new Audio` que es propia del navegador web, pide el path del audio.
+* Para luego reproducirla con el metodo `play()`.
+````
+const audio = new Audio('./audio/new-ticket.mp3');
+audio.play();
+````
+#
