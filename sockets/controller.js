@@ -5,16 +5,19 @@ const ticketControl = new TicketControl()
 
 const socketController = (socket) => {
     
+    // Cuando un cliente se conecta
     socket.emit( 'ultimo-ticket', ticketControl.ultimo );
-    socket.emit( 'estado-actual', ticketControl.ultimos4);
+    socket.emit( 'estado-actual', ticketControl.ultimos4 );
+    socket.emit( 'tickets-cola', ticketControl.tickets.length );
 
 
     socket.on('siguiente-ticket', ( payload, callback ) => {
         
         const siguiente = ticketControl.siguiente();
         callback( siguiente );
+        socket.broadcast.emit('tickets-cola', ticketControl.tickets.length);
 
-        //TODO: notificar que hay un nuevo ticket pendeinte de asignar
+
     });
 
     socket.on('atender-ticket', ({ escritorio }, callback) => {
@@ -30,6 +33,9 @@ const socketController = (socket) => {
 
         
         socket.broadcast.emit( 'estado-actual', ticketControl.ultimos4);
+        socket.emit('tickets-cola', ticketControl.tickets.length);
+        socket.broadcast.emit('tickets-cola', ticketControl.tickets.length);
+
 
 
         if( !ticket ){

@@ -1,12 +1,13 @@
 // Referencias HTML
 const lblEscritorio = document.querySelector('h1'); //primer h1
-const btnAtender    = document.querySelector('button');
-const lblTicket     = document.querySelector('small');
-const divAlerta     = document.querySelector('.alert');
+const btnAtender = document.querySelector('button');
+const lblTicket = document.querySelector('small');
+const divAlerta = document.querySelector('.alert');
+const lblPendientes = document.querySelector('#lblPendientes')
 
-const searchParams = new URLSearchParams( window.location.search );
+const searchParams = new URLSearchParams(window.location.search);
 
-if( !searchParams.has('escritorio') ){
+if (!searchParams.has('escritorio')) {
     window.location = 'index.html';
     throw new Error('El escritorio es obligatorio');
 }
@@ -26,14 +27,21 @@ socket.on('disconnect', () => {
     btnAtender.disabled = true;
 });
 
-socket.on('ultimo-ticket', (ultimo) => {
-    // lblNuevoTicket.innerText = 'Ticket ' + ultimo;
+socket.on('tickets-cola', (numero) => {
+    if (numero === 0 ) {
+        lblPendientes.style.display = 'none';
+        divAlerta.style.display = ''
+    }else{
+    divAlerta.style.display = 'none'
+    lblPendientes.style.display = '';
+    lblPendientes.innerText = numero;
+    }
 });
 
-btnAtender.addEventListener( 'click', () => {
+btnAtender.addEventListener('click', () => {
 
-    socket.emit( 'atender-ticket', { escritorio }, ( {ok, ticket} ) => {
-        if( !ok ){
+    socket.emit('atender-ticket', { escritorio }, ({ ok, ticket }) => {
+        if (!ok) {
             lblTicket.innerText = 'Nadie.'
             return divAlerta.style.display = '';
         }

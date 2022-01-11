@@ -361,3 +361,43 @@ socket.emit( 'estado-actual', ticketControl.ultimos4);
 socket.broadcast.emit( 'estado-actual', ticketControl.ultimos4);
 ````
 #
+### 7.- Ticket Pendientes por Atender
+En el escritorio tenemos que mostrar la cola de tickets pendientes, en el caso que no exista mostrar que no hay ticket
+
+En `public/js/escritorio.js`
+* Hacemos referencia al label del HTML _(eliminamos el valor por defecto que era 10 en HTML)_.
+````
+const lblPendientes = document.querySelector('#lblPendientes')
+````
+* Creamos el socket que estará escuchando que es `tickets-cola`, la cual recibira el numero.
+* En el caso que sea igual a 0, desaparecerá el label y mostrará la alerta con el mensaje `Ya no hay más tickets`.
+* En el caso que sea diferente a 0, se oculará el mensaje y mostrará el numero de colas.
+````
+socket.on('tickets-cola', (numero) => {
+    if (numero === 0 ) {
+        lblPendientes.style.display = 'none';
+        divAlerta.style.display = ''
+    }else{
+    divAlerta.style.display = 'none'
+    lblPendientes.style.display = '';
+    lblPendientes.innerText = numero;
+    }
+});
+````
+En `sockets/controller.js`
+* Lo ponemos en el inicio del controlador, para cuando un cliente se conecte.
+````
+socket.emit( 'tickets-cola', ticketControl.tickets.length );
+````
+* Dentro del socket `siguiente-ticket` que esta escuchando el servidor, ponemos nuestro socket `tickets-cola` con la propiedad `.broadcast`, de esta manera cuando se cree un nuevo ticket, se les notificará a los escritorios.
+````
+socket.broadcast.emit('tickets-cola', ticketControl.tickets.length);
+````
+* En el socket `atender-ticket` que esta escuchando el servidor, colocamos 2 socket emitiendo `tickets-cola`, de esta manera permitiendo que el escritorio que atiende a un nuevo ticket tambien se le actualice la cola.
+* Y usamos el `broadcast` para que se actualicé a los otros escritorios.
+````
+socket.emit('tickets-cola', ticketControl.tickets.length);
+socket.broadcast.emit('tickets-cola', ticketControl.tickets.length);
+````
+De esta manerá cada vez que se cree un nuevo ticket, se notificará y cuando se tome un nuevo ticket por los escritorios tambien se notificarán.
+#
