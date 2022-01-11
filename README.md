@@ -150,3 +150,66 @@ atenderTicket( escritorio ){
     }
 ````
 #
+### 4.- Socket Frontend - Siguiente ticket
+Se hará la pantalla de ticket nuevo, creando la conexiones a taves de los socket que se crearán
+En `public/nuevo-ticket.html`
+* Hacemos la referencia en el `HTML` de socket.io.
+````
+<script src="./socket.io/socket.io.js"></script>
+<script src="./js/nuevo-ticket.js"></script>
+````
+En `public/js/nuevo-ticket.js`
+* Realizamos la referencias a los elementos que tenmos, al spam  y al boton `Generar nuevo ticket`.
+````
+const lblNuevoTicket = document.querySelector('#lblNuevoTicket');
+const btnCrear       = document.querySelector('button');
+````
+* Realizamos la conexión y desconexión de socket, cuando se tendra el boton activado y cuando no se desabilitará.
+````
+const socket = io();
+
+socket.on('connect', () => {
+    btnCrear.disabled = false;
+});
+
+socket.on('disconnect', () => {
+    btnCrear.disabled = true;
+});
+````
+* Se escuchará el socket `ultimo-ticket`, en el caso que se recargue la pagina mostrar por pantalla cual fue el ultimo ticket.
+* Creamos el evento clic del boton, que emitirá el socket `siguiente-ticket` que en el payload enviará un `null` pero recibirá como respuesta el propio ticket y lo mostrará por el spam. 
+````
+socket.on('ultimo-ticket', (ultimo) => {
+    lblNuevoTicket.innerText = 'Ticket ' + ultimo;
+});
+
+btnCrear.addEventListener( 'click', () => {
+
+    socket.emit( 'siguiente-ticket', null, ( ticket ) => {
+        lblNuevoTicket.innerText = ticket;
+    });
+
+});
+````
+En `sockets/controller.js`
+* Emitiremos el ultimo ticket que se encuentra en la clase `ticketControl` en la propiedad `this.ultimo`.
+````
+socket.emit( 'ultimo-ticket', ticketControl.ultimo );
+````
+* Escucharemos el socket `siguiente-ticket` que es emitodo por el __Frontend__ y no haremos nada con el payload pero si con el callback.
+* Tomamos el metodo `siguiente()` de la clase `ticketControl` para crear un nuevo ticket y enviarlo como respuesta al socket que lo emitio.
+````
+socket.on('siguiente-ticket', ( payload, callback ) => {
+        
+        const siguiente = ticketControl.siguiente();
+        callback( siguiente );
+    })
+````
+Creamos un nuevo archivo en la raiz del proyecto llamado `nodemon.json`
+* Esto servirá para que cuando se emita el evento en el frontend y se cree un nuevo ticket no se "caiga" la aplicación con el uso de nodemon.
+````
+{
+    "ignore": ["db/*.json"]
+}
+````
+#
