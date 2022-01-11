@@ -213,3 +213,96 @@ Creamos un nuevo archivo en la raiz del proyecto llamado `nodemon.json`
 }
 ````
 #
+### 5.- Socket Frontend - Atender un Ticket
+Primero se hará la referencia a los elementos html para luego crear los socket que se utilizarán
+En `public/escritorio.html`
+* Referencia a socket.io en el html.
+````
+<script src="./socket.io/socket.io.js"></script>
+````
+En `public/js/escritorio.js`
+* Referencia a los elementos html que se utilizarán
+````
+const lblEscritorio = document.querySelector('h1');
+const btnAtender    = document.querySelector('button');
+const lblTicket     = document.querySelector('small');
+const divAlerta     = document.querySelector('.alert');
+````
+* Se hará una lectura de los parametros del url, para esto creamos una constante que le asignamos `new URLSearchParams()` con `window.location.search`. _(Esto funciona en Chrome y Firefox)_
+* Realizamos una validación si en los parametros de URL no viene `escritorio` que se devuelva al `index.html` con `window.location` y enviamos un error.
+````
+const searchParams = new URLSearchParams( window.location.search );
+
+if( !searchParams.has('escritorio') ){
+    window.location = 'index.html';
+    throw new Error('El escritorio es obligatorio');
+}
+````
+* Creamos una constante y le enviamos el escritorio.
+* Se lo insertamos en el label.
+* Ocultamos la alerta de que no existen ticket `divAlerta`.
+````
+const escritorio = searchParams.get('escritorio');
+lblEscritorio.innerText = 'Escritorio '+ escritorio;
+
+divAlerta.style.display = 'none'
+````
+* Realizamos la conexión y desconexión de socket.
+* Cuando el socket este conectado el boton activado y cuando no se desabilitará.
+````
+const socket = io();
+
+socket.on('connect', () => {
+    btnCrear.disabled = false;
+});
+
+socket.on('disconnect', () => {
+    btnCrear.disabled = true;
+});
+````
+* Creamos el evento del boton clic.
+* Emitimos un socket `atender-ticket`, le enviamos como un objeto el escritorio que lo atenderá, recibimos un callback, de un `ok` y `ticket` que se enviará del servidor.
+* En el caso que se envie un `false` en el ok, entrará a la condición, que agregamos en el label `Nadie.` _(para que diga: "Atendiendo a Nadie.")_ y mostramos que "Ya no hay más tickets".
+* En el caso que sea un __ok = `true`__, se mostará el ticket que se esta atendiendo en el label.
+````
+btnAtender.addEventListener( 'click', () => {
+
+    socket.emit( 'atender-ticket', { escritorio }, ( {ok, ticket} ) => {
+        if( !ok ){
+            lblTicket.innerText = 'Nadie.'
+            return divAlerta.style.display = '';
+        }
+        lblTicket.innerText = `Ticket ${ticket.numero}`
+    });
+});
+````
+En `sockets/controller.js`
+* En el servidor, escuchamos el socket `atender-ticket` el cual recibimos el objeto `escritorio` y un __callback__.
+* En el caso que no recibamos el `escritorio` se mandará un ok `false` y con un mensaje.
+* Usamos el metodo `atenderTicket()` enviandole el escritorio, en el caso que no haya tickets pendientes, se enviará un ok `false` con su mensaje.
+* En el caso que hayan ticket se enviará el ticket y un ok `true`.
+````
+socket.on('atender-ticket', ({ escritorio }, callback) => {
+        
+        if( !escritorio ){
+            return callback({
+                ok: false,
+                msg: 'El Escritorio es obligatorio'
+            });
+        }
+
+        const ticket = ticketControl.atenderTicket( escritorio );
+        if( !ticket ){
+            callback({
+                ok:false,
+                msg: 'Ya no hay tickets pendiente'
+            });
+        }else{
+            callback({
+                ok: true,
+                ticket
+            });
+        }
+});
+````
+#
