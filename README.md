@@ -33,7 +33,7 @@ const socketController = (socket) => {
 ````
 Se agregaron los elementos que se descargaron a la 📂carpeta `public/`
 #
-### 2.- Clase Ticket 
+### 2.- Clase TicketControl 
 En este punto se creará la logica de los ticket de que manerá funcionará. Para esto creamos lo siguiente:
 
 * Creamos el archivo `models/ticket-control.js`.
@@ -92,6 +92,61 @@ guardarDB(){
 
         const dbPath = path.join( __dirname, '../db/data.json' );
         fs.writeFileSync( dbPath, JSON.stringify( this.toJson ));
+    }
+````
+#
+### 3.- Clase Ticket - Siguiente y atender nuevo ticket
+Creamos la clase de ticket, ademas de algunos metodos
+
+En `models/ticket-control.js`
+* Con la nueva clase `Ticket` con su constructor numero y escritorio, facilitando de que todo los ticket sean iguales.
+````
+class Ticket {
+    constructor(numero, escritorio){
+        this.numero = numero;
+        this.escritorio= escritorio;
+    }
+}
+````
+* Creamos el metodo `siguiente()`.
+* Le asignamos `this.ultimo` y le sumamos 1.
+* Nueva instancia de la clase recien creada que pedirá el numero y escritorio.
+* Almacenamos el nuevo ticket en el arreglo de `this.tickets`.
+* Luego lo guardamos en `this.guardarDB()` y finalmente retonramos un String con el ticket.
+````
+siguiente(){
+        this.ultimo += 1;
+        const ticket = new Ticket( this.ultimo, null );
+        this.tickets.push( ticket );
+
+        this.guardarDB();
+        return 'Ticket ' + ticket.numero;
+    }
+````
+* En nuestro nuevo metodo `atenderTicket()` recibimos el `escritorio`, el cual atenderá el ticket.
+* Realizamos una validación, en el caso que no haya tickets se enviará un `null`.
+* Usando el `.shift()` cortamos el primer elemento y lo recibe nuestra constante `ticket`.
+* Ahora podemos asignarle un escritorio el ultimo ticket que fue removido de `this.tickets`.
+* Le asignamos a `this.ultimos4` el ticket extraido con `.unshift()`.
+* Hacemos una validación, en el caso que existan mas de 4 ticket en `this.utilimos4` se removerá con `.splice(-1,1)`.
+* Se guardar en `this.guardarDB()` y retornamos ticket.
+````
+atenderTicket( escritorio ){
+        if (this.tickets.length === 0){
+            return null;
+        }
+
+        const ticket = this.tickets.shift(); 
+        ticket.escritorio = escritorio;
+        
+        this.ultimos4.unshift( ticket );
+
+        if( this.ultimos4.length > 4){
+            this.ultimos4.splice(-1,1)
+        }
+
+        this.guardarDB();
+        return ticket;
     }
 ````
 #
