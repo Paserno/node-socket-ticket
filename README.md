@@ -306,3 +306,58 @@ socket.on('atender-ticket', ({ escritorio }, callback) => {
 });
 ````
 #
+### 6.- Mostrar cola de Tickets en Pantalla - Frontend
+Aplicaremos los camibos al archivo `publico.html` para que se actualicé con socket 
+
+En `public/publico.html`
+* Hacemos referencia en el HTML a socket.io.
+````
+<script src="./socket.io/socket.io.js"></script>
+````
+En `public/js/publico.js`
+* Hacemos referencia a todos los label del HTML que usaremos.
+````
+const lblTicket1     = document.querySelector('#lblTicket1');
+const lblEscritorio1 = document.querySelector('#lblEscritorio1');
+const lblTicket2     = document.querySelector('#lblTicket2');
+const lblEscritorio2 = document.querySelector('#lblEscritorio2');
+const lblTicket3     = document.querySelector('#lblTicket3');
+const lblEscritorio3 = document.querySelector('#lblEscritorio3');
+const lblTicket4     = document.querySelector('#lblTicket4');
+const lblEscritorio4 = document.querySelector('#lblEscritorio4');
+````
+* Escuchamos en el socket `estado-actual`, y recibimos el payload.
+* Desestructuramos el arreglo que recibiremos del payload.
+* Hacemos condiciones en el caso que venga uno de los elementos del arreglo entrará a la condición y se pintara en los label la información de que socket esta activo y que escritorio lo tomo.
+````
+socket.on('estado-actual', (payload) => {
+    const [ ticket1, ticket2, ticket3, ticket4] = payload;
+
+    if(ticket1){
+        lblTicket1.innerText     = 'Ticket ' + ticket1.numero;
+        lblEscritorio1.innerText = ticket1.escritorio;
+    }    
+    if(ticket2){
+        lblTicket2.innerText     = 'Ticket ' + ticket2.numero;
+        lblEscritorio2.innerText = ticket2.escritorio;
+    }
+    if(ticket3){
+        lblTicket3.innerText     = 'Ticket ' + ticket3.numero;
+        lblEscritorio3.innerText = ticket3.escritorio;
+    }
+    if(ticket4){
+        lblTicket4.innerText     = 'Ticket ' + ticket4.numero;
+        lblEscritorio4.innerText = ticket4.escritorio;
+    }
+});
+````
+En `sockets/controller.js`
+* Agregamos en el inicio del controlador del socket, para emitir al __Frontend__ los tickets en `ultimos4`.
+````
+socket.emit( 'estado-actual', ticketControl.ultimos4);
+````
+* Agregamos en el socket `atender-ticket`, para notificar cuando se este atendiendo un nuevo ticket.
+````
+socket.broadcast.emit( 'estado-actual', ticketControl.ultimos4);
+````
+#
