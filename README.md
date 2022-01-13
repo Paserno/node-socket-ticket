@@ -15,7 +15,7 @@ npm install
 ````
 
 #
-> __Elemento Posterior 👀:__ __[Aplicación de Ticket con Socket.io](https://github.com/Paserno/node-socket-ticket)__ 
+> __Elemento Posterior 👀:__ __[Socket con Autenticación con JWT](https://github.com/Paserno/node-socket-auth-jwt)__ 
 # 
 
 ### 1.- Inicio del Proyecto
